@@ -46,6 +46,8 @@
 ;; Represents the pieces with index 1..7.
 (def pieces [nil I Z S J L T O])
 
+(def char->piece {\- 0 \I 1 \Z 2 \S 3 \J 4 \L 5 \T 6 \O 7 \x 8 \# 9})
+
 (defn piece->char [piece] (nth "-IZSJLTOx#" piece))
 
 (defn move-piece
@@ -53,13 +55,6 @@
   (mapcat (fn [[px py]] [[(+ y py) (+ x px)] p]) ((pieces p) v)))
 
 ;; ===== board =====
-
-(defn new-board
-  ([] (new-board 12 21))
-  ([width height]
-    (into {} (for [y (range height) x (range width)
-                   :let [is-wall (or (= (- height 1) y) (= x 0) (= (- width 1) x))]]
-                   [[y x] (if is-wall 9 0)]))))
 
 (defn- row->str [row]
   (apply str (map (fn [[_ p]] (piece->char p)) row)))
@@ -69,4 +64,14 @@
 
 (defn set-piece [board p v x y]
   (apply assoc board (move-piece p v x y)))
-
+
+(defn- str->row [row y]
+  (map #(vector [y %2] (char->piece %)) row (range)))
+
+(defn new-board
+  ([] (new-board 12 21))
+  ([rows] (mapcat #(str->row % %2) rows (range)))
+  ([width height]
+    (into {} (for [y (range height) x (range width)
+                   :let [is-wall (or (= (- height 1) y) (= x 0) (= (- width 1) x))]]
+                   [[y x] (if is-wall 9 0)]))))
